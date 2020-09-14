@@ -10,7 +10,7 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#define ONE_WIRE_BUS 2
+#define ONE_WIRE_BUS 8
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
@@ -165,7 +165,9 @@ void setup() {
 
   sensors.begin(); // ds18b20 start
 
-
+  //  Serial.print(" tds_start ");
+  //  sensors.requestTemperatures(); // Send the command to get temperatures
+  //  Serial.println( sensors.getTempCByIndex(0) );
 
 
 
@@ -231,7 +233,7 @@ void loop() {
     delay(10);
 
     if (voltage < battery_min) {
-      //     Serial.println("SLEEEEEEEEEEEP"); delay(5);
+      //      Serial.println("SLEEEEEEEEEEEP"); delay(5);
 
       digitalWrite(LEDPin, HIGH);
       delay(200);
@@ -278,6 +280,7 @@ void loop() {
       digitalWrite(PowerPin, HIGH);
       delay(250);
 
+      //            sensors.begin();
 
       //      Serial.print(" B2 ");
       //      Serial.print( voltage );
@@ -308,7 +311,7 @@ void loop() {
 
       if (bme.init() != 0x60)
       {
-        //    Serial.println(F("Ops! Second BME280 Sensor not found!"));
+        //        Serial.println(F("Ops! Second BME280 Sensor not found!"));
 
         digitalWrite(LEDPin, HIGH);
         delay(50);
@@ -325,40 +328,55 @@ void loop() {
         j = 22;
       }
       else {
+
+        //        Serial.print(" bm1 ");
+        //        Serial.print( bme.init());
+        //        Serial.print(" bm11 ");
         delay(50);
         bme.readTempC();
         bme.readHumidity();
         digitalWrite(LEDPin, HIGH);
         delay(250);
         digitalWrite(LEDPin, LOW);
-        bme.readTempC();
-        bme.readHumidity();
+        //      bme.readTempC();
+        //      bme.readHumidity();
+
+        //        Serial.print(" bm2 ");
         delay(250);
 
+        wdt_reset();
 
+        //        Serial.print(" ds1 ");
         sensors.requestTemperatures(); // Send the command to get temperatures
+        //        Serial.print(" tdsq ");
+        //        Serial.print( sensors.getTempCByIndex(0) );
         tem = sensors.getTempCByIndex(0) * 10.0;            // читаем температуру
         if (tem == -1270) {
+          //          Serial.print(" ds2 ");
           tem = 599; // подменяем -127 на 59.9 в случае не подключенной 1-Wire шины
         }
-
+        wdt_reset();
+        //        Serial.print(" ds3 ");
         digitalWrite(LEDPin, HIGH);
 
         //        tem = bme.readTempC() * 10.0;
         hum = bme.readHumidity();
+        // hum = 58;
         hum = constrain(hum, 0, 99);
 
-
-        //      Serial.print(" t ");
-        //      Serial.print( tem );
-        //      Serial.print(" ts ");
-        //      Serial.print( bme.readTempC() );
-        //      Serial.print(" h ");
-        //      Serial.print( hum );
-        //      Serial.print(" hs ");
-        //      Serial.print( bme.readHumidity() );
-        //      Serial.print("   ");
-
+        /*
+                Serial.print(" t ");
+                Serial.print( tem );
+                Serial.print(" tds ");
+                Serial.print( sensors.getTempCByIndex(0) );
+                Serial.print(" ts ");
+                Serial.print( bme.readTempC() );
+                Serial.print(" h ");
+                Serial.print( hum );
+                Serial.print(" hs ");
+                Serial.print( bme.readHumidity() );
+                Serial.print("   ");
+        */
 
 
         //  hum = 9;
@@ -366,25 +384,25 @@ void loop() {
 
         tem = tem + 400;
 
-        //      Serial.print(" 0 ");
-        //      Serial.print( msg );
+        //        Serial.print(" 0 ");
+        //        Serial.print( msg );
 
         msg += tem * 10000 ;
-        //      Serial.print(" t ");
-        //      Serial.print( tem );
-        //      Serial.print(" ");
-        //      Serial.print( msg );
+        //        Serial.print(" t ");
+        //        Serial.print( tem );
+        //        Serial.print(" ");
+        //        Serial.print( msg );
         msg += hum * 10000000;
-        //      Serial.print(" h ");
-        //      Serial.print( hum );
-        //      Serial.print(" ");
-        //      Serial.print( msg );
+        //        Serial.print(" h ");
+        //        Serial.print( hum );
+        //        Serial.print(" ");
+        //        Serial.print( msg );
         //   msg += battery * 10;
         msg += voltage * 10;
-        //      Serial.print(" b ");
-        //      Serial.print( battery );
-        //      Serial.print(" ");
-        //      Serial.print( msg );
+        //        Serial.print(" b ");
+        //        Serial.print( voltage );
+        //        Serial.print(" ");
+        //        Serial.print( msg );
 
         //      long timer1 = millis();
 
@@ -392,10 +410,10 @@ void loop() {
         if (chs > 9 ) chs = (chs / 10) + (chs % 10);
         if (chs > 9 ) chs = (chs / 10) + (chs % 10);
         msg += chs;
-        //      Serial.print(" chs ");
-        //      Serial.print( chs );
-        //      Serial.print(" f ");
-        //      Serial.print( msg );
+        //        Serial.print(" chs ");
+        //        Serial.print( chs );
+        //        Serial.print(" f ");
+        //        Serial.print( msg );
 
         //      Serial.print(" t0 ");
         //      Serial.print( millis() - timer0 );
@@ -416,7 +434,7 @@ void loop() {
         //      Serial.print(" t2 ");
         //      Serial.print( millis() - timer2 );
 
-        //      Serial.println();
+        //        Serial.println();
 
         delay(10);
         //      delay(250);
